@@ -39,6 +39,11 @@ public class CalculatorGUI extends JFrame {
     private JButton btn1;
     private JButton btn4;
     private JButton btn7;
+    private JButton btnFactorial;
+    private JButton btnLogarithm;
+    private JButton btnSIN;
+    private JButton btnCOS;
+    private JButton btnTAN;
 
     /**
      * Launch the application.
@@ -246,6 +251,73 @@ public class CalculatorGUI extends JFrame {
 	});
 	btn7.setBounds(222, 117, 50, 50);
 	contentPane.add(btn7);
+	
+	JButton btnParenthesisClose = new JButton(")");
+	btnParenthesisClose.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+")");
+
+		}
+	});
+	btnParenthesisClose.setBounds(222, 267, 50, 50);
+	contentPane.add(btnParenthesisClose);
+	
+	JButton btnParenthesisOpen = new JButton("(");
+	btnParenthesisOpen.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"(");
+
+		}
+	});
+	btnParenthesisOpen.setBounds(162, 267, 60, 50);
+	contentPane.add(btnParenthesisOpen);
+	
+	btnFactorial = new JButton("!");
+	btnFactorial.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"!");
+
+		}
+	});
+	btnFactorial.setBounds(222, 67, 50, 50);
+	contentPane.add(btnFactorial);
+	
+	btnLogarithm = new JButton("log");
+	btnLogarithm.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"log(");
+
+		}
+	});
+	btnLogarithm.setBounds(162, 67, 60, 50);
+	contentPane.add(btnLogarithm);
+	
+	btnSIN = new JButton("sin");
+	btnSIN.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"sin(");
+
+		}
+	});
+	btnSIN.setBounds(162, 117, 60, 50);
+	contentPane.add(btnSIN);
+	
+	btnCOS = new JButton("cos");
+	btnCOS.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"cos(");
+		}
+	});
+	btnCOS.setBounds(162, 167, 60, 50);
+	contentPane.add(btnCOS);
+	
+	btnTAN = new JButton("tan");
+	btnTAN.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    tfEquation.setText(tfEquation.getText()+"tan(");
+		}
+	});
+	btnTAN.setBounds(162, 217, 60, 50);
+	contentPane.add(btnTAN);
     }
-    
 }

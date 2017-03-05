@@ -97,6 +97,7 @@ public class Calculator {
 	    case '%':
 	    case '^':
 	    case ';':
+	    case '!':
 	    case '/':break;//Stops if nothing happens
 	    default: throw new UnsupportedOperatorsException("The character"+c+" is not supported.");// throws an Exception if no matching value is found.
 	    }
@@ -120,6 +121,7 @@ public class Calculator {
 	    case '%':return new ModuloOperator(position);
 	    case '^':return new ExponateOperator(position);
 	    case ';':return new LogarithmOperator(position);
+	    case '!':return new FactorialOperator(position);
 	    default: return null;
 	    }
     }
@@ -139,6 +141,18 @@ public class Calculator {
 		operators.add(test);
 	    }
 	}
+    }
+    
+    /*Returns true when the operator at the position index in the 
+     * array operators is an unary operator.
+     * 
+     */
+    private boolean isUnaryOperator(int position){
+	AbstractOperator test = operators.get(position);
+	if(test instanceof FactorialOperator){
+	    return true;
+	}
+	return false;
     }
     
     /*This method removes all parenthesis. It uses the method
@@ -213,8 +227,8 @@ public class Calculator {
 		}
 		if(start==end){//When there are two operators next to eachother. For more information, read the comment above the method head.
 		    value = 0;
-		    //When the first Operator is '^' and the second one is '+' or '-'
-		    if((operators.get(i) instanceof ExponateOperator&&operators.get(i+1)instanceof PlusOperator||(operators.get(i)instanceof ExponateOperator&&operators.get(i+1)instanceof MinusOperator))){
+		    //When the first Operator is '^','*' or "/" and the second one is '+' or '-'
+		    if(((operators.get(i) instanceof ExponateOperator)||(operators.get(i) instanceof TimesOperator)||(operators.get(i) instanceof DivideOperator))&&((operators.get(i+1)instanceof PlusOperator)||(operators.get(i+1)instanceof MinusOperator))){
 			operators.remove(i+1);//removes the second operator
 			/*The end position has to be changed now.
 			 *The if statements is there if there is not another operator
@@ -229,7 +243,10 @@ public class Calculator {
 		}else{
 		    value = Double.parseDouble(equation.substring(start, end));
 		}
-		values.add(value);
+		//There only needs to be added if the operator is not an unary operator
+		if(!this.isUnaryOperator(i)){
+		    values.add(value);
+		}
 		
 	    }catch(Exception e){
 		throw new UnsupportedOrderException("This should never happen");
@@ -252,7 +269,7 @@ public class Calculator {
 	 * The result is then read into the values list and the other one which didn't change 
 	 * is then removed. The operator is removed after that aswell.
 	 */
-	for(int i =values.size();i>1;i--){
+	while(operators.size()>0){
 	    int positionHighestPrecedenceOperator = 0;//Stores the Position of the operator with the highest precedence.
 	    int highestPrecedence = 0;//Stores the highest precedence
 	    /*This loop goes through the operators list and 
@@ -264,10 +281,15 @@ public class Calculator {
 		    positionHighestPrecedenceOperator = j;
 		}
 	    }
-	    result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), values.get(positionHighestPrecedenceOperator+1));//Operates the two values.
-	    values.set(positionHighestPrecedenceOperator, result);//Reads in the result.
-	    values.remove(positionHighestPrecedenceOperator+1);//Removes the now redundant value.
-	    operators.remove(positionHighestPrecedenceOperator);//Remove the now redundant operator.
+	    if(!this.isUnaryOperator(positionHighestPrecedenceOperator)){
+		result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), values.get(positionHighestPrecedenceOperator+1));//Operates the two values.
+		values.set(positionHighestPrecedenceOperator, result);//Reads in the result.
+		values.remove(positionHighestPrecedenceOperator+1);//Removes the now redundant value.
+		operators.remove(positionHighestPrecedenceOperator);//Remove the now redundant operator.
+	    }else{
+		values.set(positionHighestPrecedenceOperator, operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), 0));
+		operators.remove(positionHighestPrecedenceOperator);
+	    }
 	}
 	return values.get(0);//Returns the result.
     }

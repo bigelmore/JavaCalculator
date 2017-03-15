@@ -21,14 +21,64 @@ public class Calculator {
 	equation = equation.replaceAll(",", ".");// Replaces all commas with dots.
 	this.testValues(equation);// Tests if all values are allowed.
 	
-	if(this.getOperator(equation.charAt(0),0)!=null){//the first letter is an operator
+	if((this.getOperator(equation.charAt(0),0)!=null)&&(!this.isUnaryOperator(this.getOperator(equation.charAt(0),0)))){//the first letter is an operator
 	    if(equation.charAt(0)=='+'||equation.charAt(0)=='-'){//the operator is + or -
 		equation = new StringBuilder(equation).insert(0, '0').toString();//0 is inserted as the first letter
-	    }else{//the operator is * or /
+	    }else{
 		equation = new StringBuilder(equation).insert(0, '1').toString();//1 is inserted as the first letter
 	    }
 	}
-	
+	//This for loop tests if the logarithms are in the right order
+	//It also inserts 10; when the logarithms are in the form log(b). For example
+	//log(25) would be changed to log(10;25)
+	//It also checks for cos, sin and tan.
+	for(int i = 0; i<equation.length();i++){
+	    if(equation.charAt(i)=='l'){
+		if(equation.charAt(i+1)!='o'||equation.charAt(i+2)!='g'){
+		    throw new UnsupportedOrderException("The logarithms are typed wrongly!Excpected synstax is log(a;b) or log(a)");
+		}
+		
+		int startNextLogarithm;//Stores the position of the next logarithm
+		if(equation.indexOf("log", i+3)!=-1){//When there is another logarithm
+		    startNextLogarithm = equation.indexOf('l');
+		}else{
+		    startNextLogarithm = equation.length()-1;//The end of the string
+		}
+		if(!equation.substring(i, startNextLogarithm+1).contains(";")){//Substring method is exclusiuve, hence the plus 1
+		    equation = new StringBuilder(equation).insert(i+4,"10;").toString();
+		}
+		
+		//This checks whether there is a number infront of the String and
+		//if there is "*" is inserted there.
+		if(i>0){
+		    try{
+			Double.parseDouble(equation.substring(i-1,i));//Throws an exception when there is no number, i.e. an operator
+			equation = new StringBuilder(equation).insert(i, "*").toString();
+		    }catch(Exception ex){//When there is no number
+			
+		    }
+		}
+	    }
+	    if(equation.charAt(i)=='c'){
+		if(equation.charAt(i+1)!='o'||equation.charAt(i+2)!='s'){
+		    throw new UnsupportedOrderException("The cosinus are typed wrongly!Excpected synstax is cos(a)");
+		}
+	    }
+	    if(equation.charAt(i)=='s'){
+		if(equation.charAt(i+1)!='i'||equation.charAt(i+2)!='n'){
+		    throw new UnsupportedOrderException("The sinus are typed wrongly!Excpected synstax is sin(a)");
+		}
+	    }
+	    if(equation.charAt(i)=='t'){
+		if(equation.charAt(i+1)!='a'||equation.charAt(i+2)!='n'){
+		    throw new UnsupportedOrderException("The tangens are typed wrongly!Excpected synstax is tan(a)");
+		}
+	    }
+	}
+	equation = equation.replaceAll("log", "");
+	equation = equation.replaceAll("sin", "s");
+	equation = equation.replaceAll("cos", "c");
+	equation = equation.replaceAll("tan", "t");
 	this.equation = equation;
     }
     
@@ -52,6 +102,9 @@ public class Calculator {
 	    case '8':
 	    case '9':
 	    case '0':
+	    case 'l':
+	    case 'o':
+	    case 'g':
 		
 	    case '.':
 	    case '(':
@@ -60,6 +113,16 @@ public class Calculator {
 	    case '+':
 	    case '-':
 	    case '*':
+	    case '%':
+	    case '^':
+	    case ';':
+	    case '!':
+	    case 'c':
+	    case 's':
+	    case 'i':
+	    case 'n':
+	    case 't':
+	    case 'a':
 	    case '/':break;//Stops if nothing happens
 	    default: throw new UnsupportedOperatorsException("The character"+c+" is not supported.");// throws an Exception if no matching value is found.
 	    }
@@ -69,7 +132,7 @@ public class Calculator {
     /*This method checks whether the character
      * is an operator. If it is, it returns a object
      * of this type. If not, it returns null.
-     * The operator is also initializid with its position
+     * The operator is also initialized with its position
      * in the array.
      */
     private AbstractOperator getOperator(char c, int position){
@@ -80,6 +143,13 @@ public class Calculator {
 	    case '+':return new PlusOperator(position);
 	    case '-':return new MinusOperator(position);
 	    case '*':return new TimesOperator(position);
+	    case '%':return new ModuloOperator(position);
+	    case '^':return new ExponateOperator(position);
+	    case ';':return new LogarithmOperator(position);
+	    case '!':return new FactorialOperator(position);
+	    case 's':return new SinusOperator(position);
+	    case 'c':return new CosinusOperator(position);
+	    case 't':return new TangensOperator(position);
 	    default: return null;
 	    }
     }
@@ -101,13 +171,29 @@ public class Calculator {
 	}
     }
     
+    /*Returns true when the operator at the position index in the 
+     * array operators is an unary operator.
+     * 
+     */
+    private boolean isUnaryOperator(int position){
+	AbstractOperator test = operators.get(position);
+	return this.isUnaryOperator(test);
+    }
+    
+    private boolean isUnaryOperator(AbstractOperator test){
+	if(test instanceof FactorialOperator||test instanceof CosinusOperator||test instanceof TangensOperator||test instanceof SinusOperator){
+	    return true;
+	}
+	return false;
+    }
+    
     /*This method removes all parenthesis. It uses the method
      * of the operators to adjust the precedence accordingly.
      */ 
     private void removeParenthesis() throws UnsupportedOrderException{
 	int currentParenthesis = 0;
 	
-	/*Counts the nummber of parenthesis already gone through. 
+	/*Counts the number of parenthesis already gone through. 
 	 * The number is then removed from the position of the Operators, because all parenthesis are removed later.
 	 */
 	int goneThroughParenthesis = 0;
@@ -133,12 +219,12 @@ public class Calculator {
 		AbstractOperator temp = operators.get(nearestOperator);
 		temp.setParenthesis(currentParenthesis);
 		temp.setPosition(temp.getPosition()-goneThroughParenthesis);//Removes the number of parenthesis from the positon.
-		operators.set(nearestOperator, temp);// sets the parentthesis of this operator, returns it in the list
+		operators.set(nearestOperator, temp);// sets the parenthesis of this operator, returns it in the list
 		nearestOperator++;
 	    }
 	}
 	
-	//The precedence of the operators are updated, so the parentthesis can be removed.
+	//The precedence of the operators are updated, so the parenthesis can be removed.
 	equation = equation.replaceAll("\\(", "");
 	equation = equation.replaceAll("\\)","");    }
     
@@ -171,8 +257,21 @@ public class Calculator {
 		}else{
 		    end = operators.get(i+1).getPosition();
 		}
-		if(start==end){//When there are two operators next to eachother. For more information, read the comment above the method head.
+		if(start==end){//When there are two operators next to each other. For more information, read the comment above the method head.
 		    value = 0;
+		    //When the first Operator is '^','*' or "/" and the second one is '+' or '-'
+		    if(((operators.get(i) instanceof ExponateOperator)||(operators.get(i) instanceof TimesOperator)||(operators.get(i) instanceof DivideOperator))&&((operators.get(i+1)instanceof PlusOperator)||(operators.get(i+1)instanceof MinusOperator))){
+			operators.remove(i+1);//removes the second operator
+			/*The end position has to be changed now.
+			 *The if statements is there if there is not another operator
+			 */
+			if(i+1==operators.size()){
+			    end = equation.length();
+			}else{
+			    end = operators.get(i+1).getPosition();
+			}
+			value = Double.parseDouble(equation.substring(start,end));//reads in the value 
+		    }
 		}else{
 		    value = Double.parseDouble(equation.substring(start, end));
 		}
@@ -197,9 +296,9 @@ public class Calculator {
 	/*This loop goes through the list of the values and
 	 * operators the two values next to the operator with the highest precedence.
 	 * The result is then read into the values list and the other one which didn't change 
-	 * is then removed. The operator is removed after that aswell.
+	 * is then removed. The operator is removed after that as well.
 	 */
-	for(int i =values.size();i>1;i--){
+	while(operators.size()>0){
 	    int positionHighestPrecedenceOperator = 0;//Stores the Position of the operator with the highest precedence.
 	    int highestPrecedence = 0;//Stores the highest precedence
 	    /*This loop goes through the operators list and 
@@ -211,10 +310,15 @@ public class Calculator {
 		    positionHighestPrecedenceOperator = j;
 		}
 	    }
-	    result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), values.get(positionHighestPrecedenceOperator+1));//Operates the two values.
-	    values.set(positionHighestPrecedenceOperator, result);//Reads in the result.
-	    values.remove(positionHighestPrecedenceOperator+1);//Removes the now redundant value.
-	    operators.remove(positionHighestPrecedenceOperator);//Remove the now redundant operator.
+	    if(!this.isUnaryOperator(positionHighestPrecedenceOperator)){
+		result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), values.get(positionHighestPrecedenceOperator+1));//Operates the two values.
+		values.set(positionHighestPrecedenceOperator, result);//Reads in the result.
+		values.remove(positionHighestPrecedenceOperator+1);//Removes the now redundant value.
+		operators.remove(positionHighestPrecedenceOperator);//Remove the now redundant operator.
+	    }else{
+		values.set(positionHighestPrecedenceOperator, operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), 0));
+		operators.remove(positionHighestPrecedenceOperator);
+	    }
 	}
 	return values.get(0);//Returns the result.
     }

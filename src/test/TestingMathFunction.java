@@ -1,5 +1,7 @@
 package test;
 
+import calculator.CosinusOperator;
+import calculator.SinusOperator;
 
 public class TestingMathFunction {
 
@@ -8,7 +10,8 @@ public class TestingMathFunction {
     }
 
     public static void main(String[] args) {
-	test(Math.sin(30));
+	SinusOperator sOperator = new SinusOperator(0);
+	test(sOperator.operate(-1, 0));
 	test(Math.sin(60));
 	test(Math.sin(90));
 	test(Math.sin(120));

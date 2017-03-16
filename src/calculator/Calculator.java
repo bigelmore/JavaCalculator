@@ -82,6 +82,10 @@ public class Calculator {
 	this.equation = equation;
     }
     
+    public String getEquation(){
+	return this.equation;
+    }
+    
     private void testValues(String equation) throws UnsupportedOperatorsException{
 	
 	/*This loop goes through each character of the Equation.
@@ -259,8 +263,8 @@ public class Calculator {
 		}
 		if(start==end){//When there are two operators next to each other. For more information, read the comment above the method head.
 		    value = 0;
-		    //When the first Operator is '^','*' or "/" and the second one is '+' or '-'
-		    if(((operators.get(i) instanceof ExponateOperator)||(operators.get(i) instanceof TimesOperator)||(operators.get(i) instanceof DivideOperator))&&((operators.get(i+1)instanceof PlusOperator)||(operators.get(i+1)instanceof MinusOperator))){
+		    //When the first Operator is '^','*','sin','cos'tan' or "/" and the second one is '+' or '-'
+		    if(((operators.get(i) instanceof TangensOperator)||(operators.get(i) instanceof SinusOperator)||(operators.get(i) instanceof CosinusOperator)||(operators.get(i) instanceof ExponateOperator)||(operators.get(i) instanceof TimesOperator)||(operators.get(i) instanceof DivideOperator))&&((operators.get(i+1)instanceof PlusOperator)||(operators.get(i+1)instanceof MinusOperator))){
 			operators.remove(i+1);//removes the second operator
 			/*The end position has to be changed now.
 			 *The if statements is there if there is not another operator
@@ -311,9 +315,19 @@ public class Calculator {
 		}
 	    }
 	    if(!this.isUnaryOperator(positionHighestPrecedenceOperator)){
-		result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), values.get(positionHighestPrecedenceOperator+1));//Operates the two values.
-		values.set(positionHighestPrecedenceOperator, result);//Reads in the result.
-		values.remove(positionHighestPrecedenceOperator+1);//Removes the now redundant value.
+		int numberOfUnaryOperators = 0;
+		/*Unary Operators change the position of the normal operators in the array.
+		 * This results in errors in the calculation and is accounted for with this loop.
+		 * It only goes through the operators array till the current operator.
+		 */
+		for (int i = 0; i<positionHighestPrecedenceOperator;i++) {
+		    if(this.isUnaryOperator(operators.get(i))){
+			numberOfUnaryOperators++;
+		    }
+		}
+		result = operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator-numberOfUnaryOperators), values.get(positionHighestPrecedenceOperator+1-numberOfUnaryOperators));//Operates the two values.
+		values.set(positionHighestPrecedenceOperator-numberOfUnaryOperators, result);//Reads in the result.
+		values.remove(positionHighestPrecedenceOperator+1-numberOfUnaryOperators);//Removes the now redundant value.
 		operators.remove(positionHighestPrecedenceOperator);//Remove the now redundant operator.
 	    }else{
 		values.set(positionHighestPrecedenceOperator, operators.get(positionHighestPrecedenceOperator).operate(values.get(positionHighestPrecedenceOperator), 0));
